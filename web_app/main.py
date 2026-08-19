@@ -1,3 +1,5 @@
+"""FastAPI application for converting cities and states into coordinates."""
+
 import os
 
 import httpx
@@ -9,11 +11,12 @@ load_dotenv()
 
 app = FastAPI()
 
-API_KEY = os.getenv("GEOCODING_API_KEY")
+API_KEY = os.getenv("GEOCODING_API_KEY") or ""
 
 
 @app.get("/", response_class=HTMLResponse)
-def home():
+def home() -> str:
+    """Return the application's home page."""
     return """
     <html>
         <head>
@@ -31,14 +34,15 @@ def home():
 def get_coordinates(
     city: str = Path(min_length=2),
     state: str = Path(min_length=2),
-):
+) -> dict[str, object]:
+    """Get the coordinates of a city and state in the United States."""
     url = "https://api.geoapify.com/v1/geocode/search"
 
-    parameters = {
+    parameters: dict[str, str] = {
         "text": f"{city}, {state}, United States",
         "format": "json",
         "filter": "countrycode:us",
-        "limit": 1,
+        "limit": "1",
         "apiKey": API_KEY,
     }
 
