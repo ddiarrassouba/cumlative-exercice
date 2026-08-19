@@ -1,4 +1,4 @@
-"""FastAPI application for converting cities and states into coordinates."""
+"""FastAPI application for converting locations and checking weather."""
 
 import os
 
@@ -63,4 +63,40 @@ def get_coordinates(
         "state": state,
         "latitude": location["lat"],
         "longitude": location["lon"],
+    }
+
+
+@app.get("/weather/{latitude}/{longitude}")
+def get_weather(
+    latitude: float = Path(ge=-90, le=90),
+    longitude: float = Path(ge=-180, le=180),
+) -> dict[str, object]:
+    """Return the current weather for a latitude and longitude."""
+    url = "https://api.open-meteo.com/v1/forecast"
+
+    parameters: dict[str, str] = {
+        "latitude": str(latitude),
+        "longitude": str(longitude),
+        "current": "temperature_2m,weather_code,wind_speed_10m",
+        "timezone": "auto",
+    }
+
+    response = httpx.get(url, params=parameters, timeout=10)
+
+    if response.status_code != 200:
+        return {"message": "The weather service is unavailable."}
+
+    weather_data = response.json()
+    current_weather = weather_data["current"]
+    current_units = weather_data["current_units"]
+
+    return {
+        "latitude": latitude,
+        "longitude": longitude,
+        "time": current_weather["time"],
+        "temperature": current_weather["temperature_2m"],
+        "temperature_unit": current_units["temperature_2m"],
+        "weather_code": current_weather["weather_code"],
+        "wind_speed": current_weather["wind_speed_10m"],
+        "wind_speed_unit": current_units["wind_speed_10m"],
     }
