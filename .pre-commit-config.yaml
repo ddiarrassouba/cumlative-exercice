@@ -1,0 +1,38 @@
+repos:
+  - repo: local
+    hooks:
+      - id: black
+        name: Format with Black
+        entry: black web_app
+        language: system
+        pass_filenames: false
+        always_run: true
+
+      - id: pylint
+        name: Lint with Pylint
+        entry: pylint web_app
+        args:
+          - --ignore=.cum_exo,__pycache__
+        language: system
+        pass_filenames: false
+        always_run: true
+
+      - id: mypy
+        name: Type check with Mypy
+        entry: mypy web_app
+        args:
+          - --exclude
+          - '(^|/)\.cum_exo/'
+        language: system
+        pass_filenames: false
+        always_run: true
+
+      - id: pytest
+        name: Run unit tests
+        entry: pytest
+        args:
+          - --cov=web_app
+          - --cov-report=term-missing
+        language: system
+        pass_filenames: false
+        always_run: true
